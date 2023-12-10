@@ -12,16 +12,18 @@ exports.up = (pgm) => {
       type: 'TEXT',
       notNull: true,
     },
-    date: {
-      type: 'TEXT',
-      notNull: true,
-    },
     owner: {
       type: 'VARCHAR(50)',
+      notNull: true,
+    },
+    date: {
+      type: 'TIMESTAMP',
+      notNull: true,
+      default: pgm.func('current_timestamp'),
     },
   });
 
-  pgm.addConstraint('threads', 'fk_owner.users_id', {
+  pgm.addConstraint('threads', 'fk_threads.owner_users_id', {
     foreignKeys: {
       columns: 'owner',
       references: 'users(id)',
@@ -31,5 +33,6 @@ exports.up = (pgm) => {
 };
 
 exports.down = (pgm) => {
+  pgm.dropConstraint('threads', 'fk_threads.owner_users_id');
   pgm.dropTable('threads');
 };
