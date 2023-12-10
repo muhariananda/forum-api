@@ -5,6 +5,7 @@ const pool = require('../../database/postgres/pool');
 const CommentRepositoryPostgres = require('../CommentRepositoryPostgres');
 const CreateComment = require('../../../Domains/comments/entities/CreateComment');
 const CreatedComment = require('../../../Domains/comments/entities/CreatedComment');
+const CommentDetail = require('../../../Domains/comments/entities/CommentDetail');
 const NotFoundError = require('../../../Commons/exceptions/NotFoundError');
 const AuthorizationError = require('../../../Commons/exceptions/AuthorizationError');
 
@@ -63,6 +64,40 @@ describe('CommentRepositoryPostgres', () => {
         id: 'comment-123',
         content: 'abc',
         owner: 'user-123',
+      }));
+    });
+  });
+
+  describe('getCommentsByThreadId function', () => {
+    it('should return accurate comment detail for all thread comments', async () => {
+      // Arrange
+      await CommentsTableTestHelper.addComment({ id: 'comment-1' });
+      await CommentsTableTestHelper.addComment({ id: 'comment-2' });
+
+      const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
+
+      // Act
+      const comments = await commentRepositoryPostgres.getCommentsByThreadId('thread-123');
+
+      // Assert
+      expect(comments).toHaveLength(2);
+
+      expect(comments[0].date).toBeDefined();
+      expect(comments[0]).toStrictEqual(new CommentDetail({
+        id: 'comment-1',
+        username: 'dummy',
+        date: comments[0].date,
+        content: 'abc',
+        isDeleted: false,
+      }));
+
+      expect(comments[1].date).toBeDefined();
+      expect(comments[1]).toStrictEqual(new CommentDetail({
+        id: 'comment-2',
+        username: 'dummy',
+        date: comments[1].date,
+        content: 'abc',
+        isDeleted: false,
       }));
     });
   });

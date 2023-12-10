@@ -1,6 +1,7 @@
 const pool = require('../../database/postgres/pool');
 const UsersTableTestHelper = require('../../../../tests/UsersTableTestHelper');
 const ThreadsTableTestHelper = require('../../../../tests/ThreadsTableTestHelper');
+const CommentsTableTestHelper = require('../../../../tests/CommentsTableTestHelper');
 const ServerTestHelper = require('../../../../tests/ServerTestsHelper');
 const container = require('../../container');
 const createServer = require('../createServer');
@@ -122,6 +123,47 @@ describe('/threads endpoint', () => {
 
       // Assert
       expect(response.statusCode).toEqual(401);
+    });
+  });
+
+  describe('when GET /threads', () => {
+    it('should response 200 and persisted thread', async () => {
+      // Arrange
+      const server = await createServer(container);
+
+      await ThreadsTableTestHelper.addThread({ id: 'thread-123' });
+      await CommentsTableTestHelper.addComment({ id: 'comment-123' });
+      await CommentsTableTestHelper.addComment({ id: 'comment-126' });
+
+      // Act
+      const response = await server.inject({
+        method: 'GET',
+        url: '/threads/thread-123',
+      });
+
+      // Assert
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(200);
+      expect(responseJson.status).toEqual('success');
+      expect(responseJson.data.thread).toBeDefined();
+      expect(responseJson.data.thread.comments).toHaveLength(2);
+    });
+
+    it('should response 404 when thread not found', async () => {
+      // Arrange
+      const server = await createServer(container);
+
+      // Act
+      const response = await server.inject({
+        method: 'GET',
+        url: '/threads/thread-xxx',
+      });
+
+      // Assert
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(404);
+      expect(responseJson.status).toEqual('fail');
+      expect(responseJson.message).toEqual('thread tidak ditemukan');
     });
   });
 });

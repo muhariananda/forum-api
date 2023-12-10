@@ -4,6 +4,7 @@ const pool = require('../../database/postgres/pool');
 const ThreadRepositoryPostgres = require('../ThreadRepositoryPostgres');
 const CreateThread = require('../../../Domains/threads/entities/CreateThread');
 const CreatedThread = require('../../../Domains/threads/entities/CreatedThread');
+const ThreadDetail = require('../../../Domains/threads/entities/ThreadDetail');
 const NotFoundError = require('../../../Commons/exceptions/NotFoundError');
 
 describe('ThreadRepositoryPostgres', () => {
@@ -60,6 +61,49 @@ describe('ThreadRepositoryPostgres', () => {
         title: createThread.title,
         owner: createThread.owner,
       }));
+    });
+  });
+
+  describe('getThreadById', () => {
+    it('should return NotFoundError when thread not found', async () => {
+      // Arrange
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
+
+      // Act & Assert
+      expect(threadRepositoryPostgres.getThreadById('thread-xxx'))
+        .rejects.toThrowError(NotFoundError);
+    });
+
+    it('should return detail thread correctly', async () => {
+      // Arrange
+      const expectedDetailThread = new ThreadDetail({
+        id: 'thread-123',
+        title: 'abc',
+        body: 'abc',
+        date: '2023',
+        username: 'dummy',
+        comments: [],
+      });
+
+      await ThreadsTableTestHelper.addThread({
+        id: 'thread-123',
+        title: 'abc',
+        body: 'abc',
+        owner: 'user-123',
+      });
+
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
+
+      // Act
+      const detailThread = await threadRepositoryPostgres.getThreadById('thread-123');
+
+      // Assert
+      expect(detailThread.id).toEqual(expectedDetailThread.id);
+      expect(detailThread.title).toEqual(expectedDetailThread.title);
+      expect(detailThread.body).toEqual(expectedDetailThread.body);
+      expect(detailThread.username).toEqual(expectedDetailThread.username);
+      expect(detailThread.comments).toEqual(expectedDetailThread.comments);
+      expect(detailThread.date).toBeDefined();
     });
   });
 
