@@ -23,6 +23,7 @@ describe('DetailComment Class', () => {
       date: 2023,
       content: 'abc',
       isDeleted: true,
+      replies: [],
     };
 
     // Act & Assert
@@ -39,11 +40,12 @@ describe('DetailComment Class', () => {
       date: '2023',
       content: 'abc',
       isDeleted: true,
+      replies: [],
     };
 
     // Act
     const {
-      id, username, date, content, isDeleted,
+      id, username, date, content, isDeleted, replies,
     } = new CommentDetail(payload);
 
     // Assert
@@ -52,5 +54,6 @@ describe('DetailComment Class', () => {
     expect(date).toEqual(payload.date);
     expect(content).toEqual(payload.content);
     expect(isDeleted).toEqual(payload.isDeleted);
+    expect(replies).toEqual(payload.replies);
   });
 });

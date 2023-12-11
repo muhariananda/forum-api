@@ -6,12 +6,13 @@ const pool = require('../../database/postgres/pool');
 const ReplyRepositoryPostgres = require('../ReplyRepositoryPostgres');
 const CreateReply = require('../../../Domains/replies/entities/CreateReply');
 const CreatedReply = require('../../../Domains/replies/entities/CreatedReply');
+const ReplyDetails = require('../../../Domains/replies/entities/ReplyDetails');
 const NotFoundError = require('../../../Commons/exceptions/NotFoundError');
 const AuthorizationError = require('../../../Commons/exceptions/AuthorizationError');
 
 describe('ReplyRepositoryPostgres', () => {
   beforeEach(async () => {
-    await UsersTableTestHelper.addUser({ id: 'user-123' });
+    await UsersTableTestHelper.addUser({ id: 'user-123', username: 'dummy' });
     await ThreadsTableTestHelper.addThread({ id: 'thread-123', owner: 'user-123' });
     await CommentsTableTestHelper.addComment({ id: 'comment-123', owner: 'user-123' });
   });
@@ -64,6 +65,42 @@ describe('ReplyRepositoryPostgres', () => {
         id: 'reply-123',
         content: 'abc',
         owner: 'user-123',
+      }));
+    });
+  });
+
+  describe('getRepliesByThreadId function', () => {
+    it('should return accurate reply detail for comment replies in the thread', async () => {
+      // Arrange
+      await RepliesTableTestHelper.addReply({ id: 'reply-1' });
+      await RepliesTableTestHelper.addReply({ id: 'reply-2' });
+
+      const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
+
+      // Act
+      const replies = await replyRepositoryPostgres.getRepliesByThreadId('thread-123');
+
+      // Assert
+      expect(replies).toHaveLength(2);
+
+      expect(replies[0].date).toBeDefined();
+      expect(replies[0]).toStrictEqual(new ReplyDetails({
+        id: 'reply-1',
+        content: 'abc',
+        date: replies[0].date,
+        username: 'dummy',
+        commentId: 'comment-123',
+        isDeleted: false,
+      }));
+
+      expect(replies[1].date).toBeDefined();
+      expect(replies[1]).toStrictEqual(new ReplyDetails({
+        id: 'reply-2',
+        content: 'abc',
+        username: 'dummy',
+        date: replies[1].date,
+        commentId: 'comment-123',
+        isDeleted: false,
       }));
     });
   });

@@ -1,3 +1,4 @@
+const ThreadRepository = require('../../../Domains/threads/ThreadRepository');
 const CommentRepository = require('../../../Domains/comments/CommentRepository');
 const ReplyRepository = require('../../../Domains/replies/ReplyRepository');
 const CreateReply = require('../../../Domains/replies/entities/CreateReply');
@@ -28,18 +29,22 @@ describe('AddReplyUseCase', () => {
       owner: userId,
     });
 
+    const mockThreadRepository = new ThreadRepository();
     const mockCommentRepository = new CommentRepository();
     const mockReplyRepository = new ReplyRepository();
 
     /**
         mocking needed function
     */
+    mockThreadRepository.checkThreadExists = jest.fn()
+      .mockImplementation(() => Promise.resolve());
     mockCommentRepository.checkCommentExists = jest.fn()
       .mockImplementation(() => Promise.resolve());
     mockReplyRepository.addReply = jest.fn()
       .mockImplementation(() => Promise.resolve(mockCreatedReply));
 
     const addReplyUseCase = new AddReplyUseCase({
+      threadRepository: mockThreadRepository,
       commentRepository: mockCommentRepository,
       replyRepository: mockReplyRepository,
     });
