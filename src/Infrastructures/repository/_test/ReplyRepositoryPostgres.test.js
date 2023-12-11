@@ -6,6 +6,8 @@ const pool = require('../../database/postgres/pool');
 const ReplyRepositoryPostgres = require('../ReplyRepositoryPostgres');
 const CreateReply = require('../../../Domains/replies/entities/CreateReply');
 const CreatedReply = require('../../../Domains/replies/entities/CreatedReply');
+const NotFoundError = require('../../../Commons/exceptions/NotFoundError');
+const AuthorizationError = require('../../../Commons/exceptions/AuthorizationError');
 
 describe('ReplyRepositoryPostgres', () => {
   beforeEach(async () => {
@@ -63,6 +65,73 @@ describe('ReplyRepositoryPostgres', () => {
         content: 'abc',
         owner: 'user-123',
       }));
+    });
+  });
+
+  describe('deleteReplyById function', () => {
+    it('should delete reply correctly', async () => {
+      // Arrange
+      await RepliesTableTestHelper.addReply({ id: 'reply-123' });
+      const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
+
+      // Act
+      await replyRepositoryPostgres.deleteReplyById('reply-123');
+
+      // Assert
+      const replies = await RepliesTableTestHelper.findReplyById('reply-123');
+      expect(replies[0].is_deleted).toEqual(true);
+    });
+  });
+
+  describe('checkReplyExists function', () => {
+    it('should return NotFoundError when reply not exists', async () => {
+      // Arrange
+      const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
+
+      // Act & Assert
+      await expect(replyRepositoryPostgres.checkReplyExists('reply-123'))
+        .rejects.toThrowError(NotFoundError);
+    });
+
+    it('should not return NotFoundError when reply exists', async () => {
+      // Arrange
+      await RepliesTableTestHelper.addReply({ id: 'reply-123' });
+      const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
+
+      // Act & Assert
+      await expect(replyRepositoryPostgres.checkReplyExists('reply-123'))
+        .resolves.not.toThrowError(NotFoundError);
+    });
+  });
+
+  describe('verifyReplyOwner function', () => {
+    it('should return AuthorizationError when owner not verify', async () => {
+      // Arrange
+      const params = {
+        replyId: 'reply-123',
+        userId: 'user-123',
+      };
+
+      const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
+
+      // Act & Assert
+      await expect(replyRepositoryPostgres.verifyReplyOwner(params))
+        .rejects.toThrowError(AuthorizationError);
+    });
+
+    it('should not return AuthorizationError when owner is verify', async () => {
+      // Arrange
+      const params = {
+        replyId: 'reply-123',
+        userId: 'user-123',
+      };
+
+      await RepliesTableTestHelper.addReply({ id: 'reply-123', owner: 'user-123' });
+      const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
+
+      // Act & Assert
+      await expect(replyRepositoryPostgres.verifyReplyOwner(params))
+        .resolves.not.toThrowError(AuthorizationError);
     });
   });
 });

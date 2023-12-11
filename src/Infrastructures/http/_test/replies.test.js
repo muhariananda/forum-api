@@ -149,4 +149,88 @@ describe('/threads/{threadId}/comments/{commentId}/replies endpoint', () => {
       expect(responseJson.message).toEqual('komentar tidak ditemukan');
     });
   });
+
+  describe('when DELETE /threads/{threadId}/comments/{commentId}/replies/{repliesId}', () => {
+    it('should response 200 and successfully delete reply', async () => {
+      // Arrange
+      const server = await createServer(container);
+      const accessToken = await ServerTestHelper.getAccessToken({ id: 'user-123' });
+
+      await RepliesTableTestHelper.addReply({ id: 'reply-123' });
+
+      // Act
+      const response = await server.inject({
+        method: 'DELETE',
+        url: '/threads/thread-123/comments/comment-123/replies/reply-123',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      // Assert
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(200);
+      expect(responseJson.status).toEqual('success');
+    });
+
+    it('should response 404 when reply not found', async () => {
+      // Arrange
+      const server = await createServer(container);
+      const accessToken = await ServerTestHelper.getAccessToken({ id: 'user-123' });
+
+      // Act
+      const response = await server.inject({
+        method: 'DELETE',
+        url: '/threads/thread-123/comments/comment-123/replies/xxx',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      // Assert
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(404);
+      expect(responseJson.status).toEqual('fail');
+      expect(responseJson.message).toEqual('balasan tidak ditemukan');
+    });
+
+    it('should response 403 Forbidden', async () => {
+      // Arrange
+      const server = await createServer(container);
+      const accessToken = await ServerTestHelper.getAccessToken({ id: 'user-321' });
+
+      await RepliesTableTestHelper.addReply({ id: 'reply-123', owner: 'user-123' });
+
+      // Act
+      const response = await server.inject({
+        method: 'DELETE',
+        url: '/threads/thread-123/comments/comment-123/replies/reply-123',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      // Assert
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(403);
+      expect(responseJson.status).toEqual('fail');
+      expect(responseJson.message).toEqual('tidak dapat mengakses balasan');
+    });
+
+    it('should response 401 when access token not provided', async () => {
+      // Arrange
+      const server = await createServer(container);
+
+      await RepliesTableTestHelper.addReply({ id: 'reply-123' });
+
+      // Act
+      const response = await server.inject({
+        method: 'DELETE',
+        url: '/threads/thread-123/comments/comment-123/replies/reply-123',
+      });
+
+      // Assert
+      expect(response.statusCode).toEqual(401);
+    });
+  });
 });
