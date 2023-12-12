@@ -9,6 +9,7 @@ describe('AddReplyUseCase', () => {
   it('should orchestrating the add reply action correctly', async () => {
     // Arrange
     const useCaseParams = {
+      threadId: 'thread-123',
       commentId: 'comment-123',
     };
     const useCasePayload = {
@@ -54,6 +55,7 @@ describe('AddReplyUseCase', () => {
 
     // Assert
     expect(createdReply).toStrictEqual(expectedCreatedReply);
+    expect(mockThreadRepository.checkThreadExists).toBeCalledWith('thread-123');
     expect(mockCommentRepository.checkCommentExists).toBeCalledWith('comment-123');
     expect(mockReplyRepository.addReply).toBeCalledWith(new CreateReply({
       ...useCaseParams,

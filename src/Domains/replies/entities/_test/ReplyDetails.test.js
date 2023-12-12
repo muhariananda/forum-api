@@ -47,7 +47,7 @@ describe('ReplyDetails Class', () => {
     // Act
     const {
       id, content, date, username, commentId, isDeleted,
-    } = payload;
+    } = new ReplyDetails(payload);
 
     // Act & Assert
     expect(id).toEqual(payload.id);
