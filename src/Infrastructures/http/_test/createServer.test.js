@@ -45,14 +45,14 @@ describe('HTTP server', () => {
 
       // Act
       const response = await server.inject({
-        method: 'POST',
+        method: 'GET',
         url: '/',
       });
 
       // Assert
       const responseJson = JSON.parse(response.payload);
       expect(response.statusCode).toEqual(200);
-      expect(responseJson.value).toEqual('Hello World');
+      expect(responseJson.value).toEqual('Hello world!');
     });
   });
 });
