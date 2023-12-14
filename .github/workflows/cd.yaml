@@ -3,7 +3,7 @@ name: Continuos Deployment
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   deploy:
@@ -16,7 +16,7 @@ jobs:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USERNAME }}
         key: ${{ secrets.SSH_KEY }}
-        port: ${{ secret.SSH_PORT }}
+        port: ${{ secrets.SSH_PORT }}
         script: |
           cd ~/forum-api
           git pull origin master
