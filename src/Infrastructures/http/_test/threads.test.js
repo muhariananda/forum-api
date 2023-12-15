@@ -3,6 +3,7 @@ const UsersTableTestHelper = require('../../../../tests/UsersTableTestHelper');
 const ThreadsTableTestHelper = require('../../../../tests/ThreadsTableTestHelper');
 const CommentsTableTestHelper = require('../../../../tests/CommentsTableTestHelper');
 const RepliesTableTestHelper = require('../../../../tests/RepliesTableTestHelper');
+const LikesTableTestHelper = require('../../../../tests/LikesTableTestHelper');
 const ServerTestHelper = require('../../../../tests/ServerTestsHelper');
 const container = require('../../container');
 const createServer = require('../createServer');
@@ -137,6 +138,8 @@ describe('/threads endpoint', () => {
       await CommentsTableTestHelper.addComment({ id: 'comment-126' });
       await RepliesTableTestHelper.addReply({ id: 'reply-1' });
       await RepliesTableTestHelper.addReply({ id: 'reply-2' });
+      await LikesTableTestHelper.addLike({ id: 'like-1', commentId: 'comment-123' });
+      await LikesTableTestHelper.addLike({ id: 'like-2', commentId: 'comment-123' });
 
       // Act
       const response = await server.inject({
@@ -150,6 +153,7 @@ describe('/threads endpoint', () => {
       expect(responseJson.status).toEqual('success');
       expect(responseJson.data.thread).toBeDefined();
       expect(responseJson.data.thread.comments).toHaveLength(2);
+      expect(responseJson.data.thread.comments[0].likeCount).toEqual(2);
       expect(responseJson.data.thread.comments[0].replies).toHaveLength(2);
     });
 
