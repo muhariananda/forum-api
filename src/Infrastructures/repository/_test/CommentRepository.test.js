@@ -90,6 +90,7 @@ describe('CommentRepositoryPostgres', () => {
         content: 'abc',
         isDeleted: false,
         replies: [],
+        likeCount: 0,
       }));
 
       expect(comments[1].date).toBeDefined();
@@ -100,6 +101,7 @@ describe('CommentRepositoryPostgres', () => {
         content: 'abc',
         isDeleted: false,
         replies: [],
+        likeCount: 0,
       }));
     });
   });

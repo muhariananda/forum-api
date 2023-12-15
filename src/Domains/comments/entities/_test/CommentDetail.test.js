@@ -24,6 +24,7 @@ describe('DetailComment Class', () => {
       content: 'abc',
       isDeleted: true,
       replies: [],
+      likeCount: '0',
     };
 
     // Act & Assert
@@ -41,11 +42,12 @@ describe('DetailComment Class', () => {
       content: 'abc',
       isDeleted: true,
       replies: [],
+      likeCount: 1,
     };
 
     // Act
     const {
-      id, username, date, content, isDeleted, replies,
+      id, username, date, content, isDeleted, replies, likeCount,
     } = new CommentDetail(payload);
 
     // Assert
@@ -55,5 +57,6 @@ describe('DetailComment Class', () => {
     expect(content).toEqual(payload.content);
     expect(isDeleted).toEqual(payload.isDeleted);
     expect(replies).toEqual(payload.replies);
+    expect(likeCount).toEqual(payload.likeCount);
   });
 });

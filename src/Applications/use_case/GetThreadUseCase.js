@@ -1,8 +1,14 @@
 class GetThreadUseCase {
-  constructor({ threadRepository, commentRepository, replyRepository }) {
+  constructor({
+    threadRepository,
+    commentRepository,
+    replyRepository,
+    likeRepository,
+  }) {
     this._threadRepository = threadRepository;
     this._commentRepository = commentRepository;
     this._replyRepository = replyRepository;
+    this._likeRepository = likeRepository;
   }
 
   async execute(useCaseParams) {
@@ -13,8 +19,10 @@ class GetThreadUseCase {
     const replies = await this._replyRepository.getRepliesByThreadId(threadId);
 
     const formattedComments = this._formatDeletedComments(comments);
+    const commentWithLike = await this._putLikeCountToComments(formattedComments);
+
     const formattedReplies = this._formatDeletedReplies(replies);
-    const commentsWithReplies = this._putRepliesToComments(formattedComments, formattedReplies);
+    const commentsWithReplies = this._putRepliesToComments(commentWithLike, formattedReplies);
 
     thread.comments = commentsWithReplies;
     return thread;
@@ -40,6 +48,13 @@ class GetThreadUseCase {
       replies: replies
         .filter((reply) => reply.commentId === comment.id)
         .map(({ commentId, ...cleanedReply }) => cleanedReply),
+    }));
+  }
+
+  _putLikeCountToComments(comments) {
+    return Promise.all(comments.map(async (comment) => {
+      const likeCount = await this._likeRepository.getLikesCountByCommentId(comment.id);
+      return { ...comment, likeCount };
     }));
   }
 }
