@@ -42,7 +42,7 @@ Forum API is a RESTful API built using Javascript and Node.js, leveraging the Ha
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/your-username/forum-api.git
+   git clone https://github.com/muhariananda/forum-api.git
    cd forum-api
    ```
 
